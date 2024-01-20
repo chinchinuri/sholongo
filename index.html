@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Розкрити посилання</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 8px 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #result {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Short URL to final URL</h1>
+    <form id="redirectForm">
+        <label for="urlInput">Введіть URL:</label>
+        <input type="text" id="urlInput" required>
+        <button type="button" onclick="getAndDisplayRedirects()">Розкрити посилання</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        function getAndDisplayRedirects() {
+            var url = document.getElementById('urlInput').value;
+            var redirects = getRedirectChain(url);
+
+            if (redirects.length > 0) {
+                var redirectString = redirects.join(",\n");
+                document.getElementById('result').innerHTML = "<strong>Ланцюжок перенаправлень:</strong><br>" + redirectString;
+            } else {
+                document.getElementById('result').innerHTML = "<strong>Немає перенаправлень</strong>";
+            }
+        }
+
+        function getRedirectChain(url) {
+            var redirects = [];
+
+            var options = {
+                headers: { 
+                    'Content-Type': "application/json", 
+                    'Accept': "application/json",
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'
+                },
+                followRedirects: false,
+                muteHttpExceptions: true,
+                method: "GET",
+                contentType: "application/json",
+                validateHttpsCertificates: false,
+            };
+
+            while (true) {
+                var response = UrlFetchApp.fetch(url, options);
+
+                if (response.getHeaders()['Location']) {
+                    var redirectUrl = response.getHeaders()['Location'];
+                    redirects.push(redirectUrl);
+                    url = redirectUrl;
+                } else {
+                    break;
+                }
+            }
+
+            return redirects;
+        }
+    </script>
+</body>
+</html>
