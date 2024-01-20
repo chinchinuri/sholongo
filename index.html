@@ -71,10 +71,7 @@
             var response;
 
             do {
-                response = await fetch(url, {
-                    method: "HEAD",
-                    redirect: "follow"
-                });
+                response = await getResponse(url);
 
                 if (response.ok) {
                     url = response.url;
@@ -83,6 +80,38 @@
             } while (response.ok && response.url !== url);
 
             return redirects;
+        }
+
+        function getResponse(url) {
+            return new Promise((resolve, reject) => {
+                var xhr = new XMLHttpRequest();
+                xhr.open('HEAD', url, true);
+
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4) {
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            resolve({
+                                ok: true,
+                                url: xhr.responseURL
+                            });
+                        } else {
+                            resolve({
+                                ok: false,
+                                url: xhr.responseURL
+                            });
+                        }
+                    }
+                };
+
+                xhr.onerror = function () {
+                    resolve({
+                        ok: false,
+                        url: url
+                    });
+                };
+
+                xhr.send();
+            });
         }
     </script>
 </body>
