@@ -44,7 +44,7 @@
     </style>
 </head>
 <body>
-    <h1>Short URL to final URL</h1>
+    <h1>Розкрити посилання</h1>
     <form id="redirectForm">
         <label for="urlInput">Введіть URL:</label>
         <input type="text" id="urlInput" required>
@@ -54,9 +54,9 @@
     <div id="result"></div>
 
     <script>
-        function getAndDisplayRedirects() {
+        async function getAndDisplayRedirects() {
             var url = document.getElementById('urlInput').value;
-            var redirects = getRedirectChain(url);
+            var redirects = await getRedirectChain(url);
 
             if (redirects.length > 0) {
                 var redirectString = redirects.join(",\n");
@@ -66,27 +66,22 @@
             }
         }
 
-        function getRedirectChain(url) {
+        async function getRedirectChain(url) {
             var redirects = [];
 
-            var options = {
-                headers: { 
-                    'Content-Type': "application/json", 
-                    'Accept': "application/json",
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'
-                },
-                followRedirects: false,
-                muteHttpExceptions: true,
-                method: "GET",
-                contentType: "application/json",
-                validateHttpsCertificates: false,
-            };
-
             while (true) {
-                var response = UrlFetchApp.fetch(url, options);
+                var response = await fetch(url, {
+                    headers: { 
+                        'Content-Type': "application/json", 
+                        'Accept': "application/json",
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'
+                    },
+                    method: "GET",
+                    redirect: "manual"
+                });
 
-                if (response.getHeaders()['Location']) {
-                    var redirectUrl = response.getHeaders()['Location'];
+                if (response.headers.get('Location')) {
+                    var redirectUrl = response.headers.get('Location');
                     redirects.push(redirectUrl);
                     url = redirectUrl;
                 } else {
