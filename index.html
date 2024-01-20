@@ -68,26 +68,19 @@
 
         async function getRedirectChain(url) {
             var redirects = [];
+            var response;
 
-            while (true) {
-                var response = await fetch(url, {
-                    headers: { 
-                        'Content-Type': "application/json", 
-                        'Accept': "application/json",
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'
-                    },
-                    method: "GET",
-                    redirect: "manual"
+            do {
+                response = await fetch(url, {
+                    method: "HEAD",
+                    redirect: "follow"
                 });
 
-                if (response.headers.get('Location')) {
-                    var redirectUrl = response.headers.get('Location');
-                    redirects.push(redirectUrl);
-                    url = redirectUrl;
-                } else {
-                    break;
+                if (response.ok) {
+                    url = response.url;
+                    redirects.push(url);
                 }
-            }
+            } while (response.ok && response.url !== url);
 
             return redirects;
         }
