@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Розкрити посилання</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            margin: 20px;
+        }
+        #result {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4">Розкрити посилання</h1>
+        <form id="redirectForm">
+            <div class="form-group">
+                <label for="urlInput">Введіть URL:</label>
+                <input type="text" class="form-control" id="urlInput" required>
+            </div>
+            <button type="button" class="btn btn-success" onclick="getAndDisplayRedirects()">Розкрити посилання</button>
+        </form>
+
+        <div id="result" class="alert alert-info" role="alert" style="display: none;"></div>
+    </div>
+
+    <script>
+        async function getAndDisplayRedirects() {
+            var url = document.getElementById('urlInput').value;
+            var response = await fetch(`/redirects?url=${encodeURIComponent(url)}`);
+            var data = await response.json();
+
+            var resultElement = document.getElementById('result');
+            resultElement.style.display = 'block';
+            if (data.redirects.length > 0 || data.errors.length > 0) {
+                var redirectString = data.redirects.map((redirect, index) => `<strong>Перенаправлення ${index + 1}:</strong> ${redirect}`).join("<br>");
+                var errorString = data.errors.map((error) => `<strong>Помилка на URL ${error.url}:</strong> ${error.error}`).join("<br>");
+                resultElement.innerHTML = `${redirectString}<br>${errorString}`;
+            } else {
+                resultElement.innerHTML = "<strong>Немає перенаправлень або помилок</strong>";
+            }
+        }
+    </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
